@@ -1,0 +1,170 @@
+/* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 2rem auto;
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+header p {
+    font-size: 1.1rem;
+    color: #7f8c8d;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardEnter {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Home Page: Subject Grid */
+#subject-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+}
+
+.subject-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: cardEnter 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.subject-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.subject-card h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #34495e;
+}
+
+/* Chapters Page */
+.back-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #3498db;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.back-link:hover {
+    color: #2980b9;
+}
+
+#chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+    text-align: left;
+}
+
+.chapter-link {
+    display: block;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s, background-color 0.3s;
+    animation: cardEnter 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.chapter-link:hover {
+    transform: translateX(10px);
+    background-color: #ecf0f1;
+}
+
+/* MCQs Page */
+#mcq-container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#question {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.btn {
+    background-color: #3498db;
+    border: none;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+    transform: scale(1.03);
+}
+
+.btn.correct {
+    background-color: #2ecc71;
+}
+
+.btn.wrong {
+    background-color: #e74c3c;
+}
+
+#result-container {
+    text-align: center;
+}
+
+.hide {
+    display: none;
+}

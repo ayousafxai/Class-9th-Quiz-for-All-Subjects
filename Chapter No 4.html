@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structure of Molecules</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .question-card, .results-card, .analysis-card {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .option-button {
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            color: #4b5563;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+        }
+
+        .option-button:hover {
+            background-color: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        .option-button:disabled {
+            cursor: default;
+        }
+
+        .option-button.correct {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            font-weight: 700;
+            color: #166534;
+        }
+
+        .option-button.incorrect {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+            font-weight: 700;
+            color: #991b1b;
+        }
+
+        .nav-button {
+            background-color: #1f2937;
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background-color: #4b5563;
+        }
+
+        .retake-button, .generate-button {
+            background-color: #4f46e5;
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+
+        .retake-button:hover, .generate-button:hover {
+            background-color: #6366f1;
+        }
+
+        .explanation {
+            background-color: #f0f4f8;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #1f2937;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .analysis-card .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            background-color: #f9fafb;
+        }
+
+        .analysis-card .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .analysis-card .stat-correct {
+            color: #166534;
+            background-color: #dcfce7;
+        }
+
+        .analysis-card .stat-incorrect {
+            color: #991b1b;
+            background-color: #fee2e2;
+        }
+
+        .analysis-card .stat-unanswered {
+            color: #4b5563;
+            background-color: #e5e7eb;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10 flex items-center justify-center min-h-screen">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="space-y-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-6">Structure of Molecules</h1>
+            <div class="question-card">
+                <div id="question-text" class="text-xl font-bold text-gray-800 mb-6"></div>
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="explanation-container"></div>
+            </div>
+
+            <!-- Navigation and Progress -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div id="progress-text" class="text-sm font-medium text-gray-500"></div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button id="prev-button" class="nav-button py-2 px-4 rounded-full font-semibold">Previous</button>
+                    <button id="next-button" class="nav-button py-2 px-4 rounded-full font-semibold">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container (Initially Hidden) -->
+        <div id="results-container" class="hidden text-center space-y-6">
+            <h2 class="text-3xl font-bold text-gray-900">Quiz Completed!</h2>
+            <div class="analysis-card space-y-4">
+                <h3 class="text-xl font-bold text-gray-800">Your Results</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left font-medium">
+                    <div class="stat-item">
+                        <span class="stat-icon stat-correct p-3 rounded-full">✔</span>
+                        <div>
+                            <div class="text-sm text-gray-500">Correct</div>
+                            <div id="correct-count" class="text-xl font-bold text-gray-800">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon stat-incorrect p-3 rounded-full">✖</span>
+                        <div>
+                            <div class="text-sm text-gray-500">Incorrect</div>
+                            <div id="incorrect-count" class="text-xl font-bold text-gray-800">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon stat-unanswered p-3 rounded-full">?</span>
+                        <div>
+                            <div class="text-sm text-gray-500">Unanswered</div>
+                            <div id="unanswered-count" class="text-xl font-bold text-gray-800">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-4 border-t border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-700 mb-4">Want to review your knowledge?</h4>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button id="generate-flashcards" class="generate-button py-3 px-6 rounded-full font-bold">Generate Flashcards</button>
+                        <button id="generate-mindmap" class="generate-button py-3 px-6 rounded-full font-bold">Generate Mind Map</button>
+                    </div>
+                </div>
+            </div>
+            <button id="retake-button" class="retake-button py-3 px-8 rounded-full font-bold">Retake Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Why do atoms react or form chemical bonds?",
+                options: ["To increase their energy", "To achieve stability", "To become larger in size", "To become electrically neutral"],
+                correctAnswer: "To achieve stability",
+                explanation: "Atoms form bonds to lower their potential energy and achieve a more stable, low-energy state, which is typically the electronic configuration of a noble gas."
+            },
+            {
+                question: "A molecule is formed when:",
+                options: ["A single atom exists alone", "Two or more atoms chemically combine", "An atom loses all its electrons", "An atom gains a nucleus"],
+                correctAnswer: "Two or more atoms chemically combine",
+                explanation: "A molecule is a group of two or more atoms held together by chemical bonds. This chemical combination results in a new substance with unique properties."
+            },
+            {
+                question: "The \"duplet rule\" refers to the tendency of an atom to:",
+                options: ["Attain eight electrons in its valence shell", "Lose two electrons from its valence shell", "Attain two electrons in its valence shell", "Share two pairs of electrons"],
+                correctAnswer: "Attain two electrons in its valence shell",
+                explanation: "The duplet rule applies to very small atoms like Hydrogen and Helium, which achieve stability with only two valence electrons."
+            },
+            {
+                question: "The \"octet rule\" is the tendency of atoms to achieve a valence shell with:",
+                options: ["Six electrons", "Two electrons", "Eight electrons", "Ten electrons"],
+                correctAnswer: "Eight electrons",
+                explanation: "The Octet Rule is the general principle that atoms tend to form bonds to acquire eight electrons in their outermost shell, a stable configuration."
+            },
+            {
+                question: "Which group of elements is considered exceptionally stable and non-reactive?",
+                options: ["Halogens", "Alkali metals", "Noble gases", "Alkaline earth metals"],
+                correctAnswer: "Noble gases",
+                explanation: "Noble gases (Group 18) are unreactive because their valence shells are already completely filled, satisfying the Octet Rule."
+            },
+            {
+                question: "Noble gases belong to which group in the periodic table?",
+                options: ["Group 1", "Group 17", "Group 2", "Group 18"],
+                correctAnswer: "Group 18",
+                explanation: "Noble gases are located in the far-right column of the periodic table, known as Group 18."
+            },
+            {
+                question: "Why are noble gases generally unreactive?",
+                options: ["They have a high atomic mass", "Their valence shells are completely filled", "They exist only in the gas phase", "They have an equal number of protons and neutrons"],
+                correctAnswer: "Their valence shells are completely filled",
+                explanation: "Having a full valence shell makes noble gases electronically stable, so they have no need to gain, lose, or share electrons to form bonds."
+            },
+            {
+                question: "How many valence electrons does a Helium atom have?",
+                options: ["Eight", "One", "Two", "Four"],
+                correctAnswer: "Two",
+                explanation: "Helium is an exception to the octet rule; it only has two valence electrons, which completely fills its outermost shell and makes it stable."
+            },
+            {
+                question: "Which of the following is NOT a method for an atom to achieve stability?",
+                options: ["By gaining electrons", "By sharing valence electrons", "By destroying its nucleus", "By giving away valence electrons"],
+                correctAnswer: "By destroying its nucleus",
+                explanation: "Chemical bonding involves the valence electrons, not the nucleus. The nucleus contains protons and neutrons and is not altered in chemical reactions."
+            },
+            {
+                question: "Atoms form a chemical bond when which forces dominate between them?",
+                options: ["Repulsive forces", "Nuclear forces", "Gravitational forces", "Attractive forces"],
+                correctAnswer: "Attractive forces",
+                explanation: "A chemical bond is formed when the attractive forces between the atoms (electron-nucleus attraction) outweigh the repulsive forces (electron-electron and nucleus-nucleus repulsion)."
+            },
+            {
+                question: "An ionic bond is formed by the:",
+                options: ["Mutual sharing of electrons", "Complete transfer of one or more electrons", "Donation of an electron pair by one atom", "Overlapping of atomic orbitals"],
+                correctAnswer: "Complete transfer of one or more electrons",
+                explanation: "Ionic bonds are a result of the electrostatic attraction between a metal atom that has lost electrons to become a positive ion and a non-metal atom that has gained electrons to become a negative ion."
+            },
+            {
+                question: "Ionic bonds typically form between:",
+                options: ["Two non-metals", "Two metals", "A metal and a non-metal", "A metal and a noble gas"],
+                correctAnswer: "A metal and a non-metal",
+                explanation: "Metals tend to lose electrons and non-metals tend to gain them, which is the necessary condition for an ionic bond."
+            },
+            {
+                question: "In the formation of Sodium Chloride (NaCl), which atom loses an electron?",
+                options: ["Chlorine", "Both Sodium and Chlorine", "Sodium", "Neither atom loses an electron"],
+                correctAnswer: "Sodium",
+                explanation: "Sodium is a metal and has a low ionization energy, so it readily loses one electron to form a positive ion ($Na^+$)."
+            },
+            {
+                question: "When an atom loses an electron, it forms a:",
+                options: ["Negative ion (anion)", "Neutral atom", "Positive ion (cation)", "Isotope"],
+                correctAnswer: "Positive ion (cation)",
+                explanation: "Losing a negatively charged electron leaves the atom with more protons than electrons, resulting in a net positive charge."
+            },
+            {
+                question: "When an atom gains an electron, it forms a:",
+                options: ["Positive ion (cation)", "Negative ion (anion)", "Molecule", "Covalent bond"],
+                correctAnswer: "Negative ion (anion)",
+                explanation: "Gaining a negatively charged electron gives the atom more electrons than protons, resulting in a net negative charge."
+            },
+            {
+                question: "Elements in Group 1 and 2 of the periodic table tend to:",
+                options: ["Gain electrons", "Lose electrons", "Share electrons", "Be unreactive"],
+                correctAnswer: "Lose electrons",
+                explanation: "Group 1 and 2 elements are metals with only one or two valence electrons, which are easily lost to form stable cations."
+            },
+            {
+                question: "How many valence electrons does an atom of Chlorine (Group 17) have?",
+                options: ["One", "Eight", "Seven", "Two"],
+                correctAnswer: "Seven",
+                explanation: "Chlorine is in Group 17, which means it has seven valence electrons and only needs one more to complete its octet."
+            },
+            {
+                question: "Which statement best describes the properties of ionic compounds?",
+                options: ["They have low melting points and are poor conductors of electricity", "They have high melting points and conduct electricity in the molten state", "They are gases at room temperature", "They are insoluble in water"],
+                correctAnswer: "They have high melting points and conduct electricity in the molten state",
+                explanation: "The strong electrostatic forces in ionic compounds require a large amount of energy to break, leading to high melting points. In the molten state, the ions are free to move and can conduct electricity."
+            },
+            {
+                question: "Ionic compounds conduct electricity in the molten state or in solution because:",
+                options: ["They contain free electrons", "Their ions are free to move", "They become metallic", "They are non-polar"],
+                correctAnswer: "Their ions are free to move",
+                explanation: "In a solid ionic compound, the ions are locked in a fixed lattice. When molten or dissolved in water, the ions are mobile and can carry an electric charge."
+            },
+            {
+                question: "Compounds formed through ionic bonding are known as:",
+                options: ["Covalent compounds", "Molecular compounds", "Ionic compounds", "Metallic compounds"],
+                correctAnswer: "Ionic compounds",
+                explanation: "Compounds formed by the transfer of electrons and held together by ionic bonds are called ionic compounds."
+            },
+            {
+                question: "A covalent bond is formed by the:",
+                options: ["Transfer of electrons", "Attraction between oppositely charged ions", "Mutual sharing of electrons", "Overlapping of atomic orbitals"],
+                correctAnswer: "Mutual sharing of electrons",
+                explanation: "A covalent bond is characterized by the sharing of valence electrons between atoms, typically non-metals, to achieve a full outer shell."
+            },
+            {
+                question: "A single covalent bond is formed when two atoms share:",
+                options: ["One electron in total", "One pair of electrons", "Two pairs of electrons", "Three electrons in total"],
+                correctAnswer: "One pair of electrons",
+                explanation: "A single bond consists of a shared pair of electrons, with one electron contributed from each bonding atom."
+            },
+            {
+                question: "A double covalent bond is represented by:",
+                options: ["A single line", "A triple line", "A double line", "A dotted line"],
+                correctAnswer: "A double line",
+                explanation: "A double bond involves the sharing of two pairs of electrons and is represented by a double line between the atoms."
+            },
+            {
+                question: "Which molecule contains a double covalent bond?",
+                options: ["Hydrogen ($H_2$)", "Methane ($CH_4$)", "Nitrogen ($N_2$)", "Oxygen ($O_2$)"],
+                correctAnswer: "Oxygen ($O_2$)",
+                explanation: "In an oxygen molecule ($O_2$), each oxygen atom contributes two valence electrons, forming a double bond to satisfy the octet rule."
+            },
+            {
+                question: "Which molecule contains a triple covalent bond?",
+                options: ["Chlorine ($Cl_2$)", "Oxygen ($O_2$)", "Nitrogen ($N_2$)", "Water ($H_2O$)"],
+                correctAnswer: "Nitrogen ($N_2$)",
+                explanation: "In a nitrogen molecule ($N_2$), each nitrogen atom shares three valence electrons, forming a very strong triple bond."
+            },
+            {
+                question: "Covalent bonds usually form between atoms of:",
+                options: ["Metals", "Non-metals", "A metal and a non-metal", "Noble gases"],
+                correctAnswer: "Non-metals",
+                explanation: "Non-metals have high electronegativity and tend to attract electrons, making them more likely to share electrons with each other than to transfer them completely."
+            },
+            {
+                question: "What is a general property of covalent compounds?",
+                options: ["High boiling points", "Good electrical conductivity in solution", "Low melting and boiling points", "High solubility in water"],
+                correctAnswer: "Low melting and boiling points",
+                explanation: "Covalent compounds are held together by relatively weak intermolecular forces, which require less energy to overcome, resulting in lower melting and boiling points."
+            },
+            {
+                question: "The electrons that participate in chemical bonding are called:",
+                options: ["Core electrons", "Lone pair electrons", "Bonding electrons", "Neutral electrons"],
+                correctAnswer: "Bonding electrons",
+                explanation: "Valence electrons that are involved in forming bonds are specifically called bonding electrons."
+            },
+            {
+                question: "The pair of valence electrons involved in forming a covalent bond is called a:",
+                options: ["Lone pair", "Electron pair", "Double bond", "Bond pair"],
+                correctAnswer: "Bond pair",
+                explanation: "A bond pair is a pair of electrons that is shared between two atoms, forming a covalent bond."
+            },
+            {
+                question: "Covalent compounds are generally insoluble in water but soluble in solvents like:",
+                options: ["Liquid nitrogen", "Molten salt", "Benzene or ether", "Hydrochloric acid"],
+                correctAnswer: "Benzene or ether",
+                explanation: "Covalent compounds are often non-polar and follow the 'like dissolves like' rule, meaning they dissolve in other non-polar solvents like benzene or ether."
+            },
+            {
+                question: "A covalent bond between two identical atoms (homoatoms) is always:",
+                options: ["Polar", "Non-polar", "Ionic", "Metallic"],
+                correctAnswer: "Non-polar",
+                explanation: "In a bond between two identical atoms, there is no difference in electronegativity, so the electrons are shared perfectly equally, making the bond non-polar."
+            },
+            {
+                question: "In a non-polar covalent bond, the shared electron pair is attracted:",
+                options: ["More by the larger atom", "More by the smaller atom", "Equally by both atoms", "By neither of the atoms"],
+                correctAnswer: "Equally by both atoms",
+                explanation: "Non-polar bonds are defined by the equal sharing of electrons, as the two atoms have the same pull on the shared electrons."
+            },
+            {
+                question: "A polar covalent bond is formed between:",
+                options: ["Two identical non-metals", "Two different non-metals", "Two identical metals", "A metal and a non-metal"],
+                correctAnswer: "Two different non-metals",
+                explanation: "When two different non-metals bond, their electronegativity difference is typically large enough to cause unequal sharing of electrons, creating a polar bond."
+            },
+            {
+                question: "In a polar covalent bond, what is meant by \"unequal sharing\"?",
+                options: ["One atom gives both electrons", "The atoms have different numbers of protons", "The shared electrons spend more time near the more electronegative atom", "The bond length is not uniform"],
+                correctAnswer: "The shared electrons spend more time near the more electronegative atom",
+                explanation: "Unequal sharing occurs because the more electronegative atom pulls the shared electrons closer to its nucleus, creating partial charges."
+            },
+            {
+                question: "The unequal sharing of electrons in a polar bond results in the formation of:",
+                options: ["Full positive and negative ions", "A stable octet", "Partial positive (δ+) and partial negative (δ-) charges", "Free radicals"],
+                correctAnswer: "Partial positive (δ+) and partial negative (δ-) charges",
+                explanation: "The shift of electron density towards the more electronegative atom creates regions of slight positive and negative charge, not full ions."
+            },
+            {
+                question: "Which of the following molecules has a non-polar covalent bond?",
+                options: ["HCl", "H₂O", "Cl₂", "NH₃"],
+                correctAnswer: "Cl₂",
+                explanation: "The bond in a chlorine molecule ($Cl_2$) is non-polar because the two chlorine atoms are identical and have the same electronegativity, so they share the electrons equally."
+            },
+            {
+                question: "Which of the following molecules has a polar covalent bond?",
+                options: ["H₂", "O₂", "N₂", "HCl"],
+                correctAnswer: "HCl",
+                explanation: "Hydrogen and Chlorine have different electronegativities, so the electrons are shared unequally, making the bond polar."
+            },
+            {
+                question: "A bond is considered predominantly ionic if the electronegativity difference is:",
+                options: ["Zero", "Less than 1.7", "Equal to 1.7", "Greater than 1.7"],
+                correctAnswer: "Greater than 1.7",
+                explanation: "A large electronegativity difference, typically greater than 1.7 on the Pauling scale, indicates that one atom is pulling the electrons so strongly that it leads to a complete transfer, forming an ionic bond."
+            },
+            {
+                question: "A bond is considered predominantly covalent if the electronegativity difference is:",
+                options: ["Less than 1.7", "Greater than 1.7", "Exactly 2.0", "Greater than 3.0"],
+                correctAnswer: "Less than 1.7",
+                explanation: "When the electronegativity difference is small, electrons are shared rather than transferred, resulting in a covalent bond."
+            },
+            {
+                question: "Polar covalent compounds are often soluble in:",
+                options: ["Benzene", "Water", "Oil", "Hexane"],
+                correctAnswer: "Water",
+                explanation: "Water is a highly polar solvent. Following the 'like dissolves like' rule, it can effectively dissolve other polar compounds."
+            },
+            {
+                question: "A coordinate covalent bond is also known as a:",
+                options: ["Polar bond", "Dative bond", "Double bond", "Ionic bond"],
+                correctAnswer: "Dative bond",
+                explanation: "A coordinate covalent bond is a special type of bond where one atom donates both electrons. This is why it is also called a dative bond."
+            },
+            {
+                question: "In a coordinate covalent bond, the shared electron pair is donated by:",
+                options: ["Both of the bonded atoms", "Neither of the bonded atoms", "Only one of the bonded atoms", "An external source"],
+                correctAnswer: "Only one of the bonded atoms",
+                explanation: "The defining feature of a coordinate covalent bond is that the shared electron pair originates from a single atom, called the donor."
+            },
+            {
+                question: "The atom or molecule that donates the electron pair is called the:",
+                options: ["Acceptor", "Anion", "Donor", "Cation"],
+                correctAnswer: "Donor",
+                explanation: "The atom that provides the lone pair of electrons to be shared is the donor."
+            },
+            {
+                question: "The atom or molecule that accepts the electron pair is called the:",
+                options: ["Donor", "Acceptor", "Lewis base", "Proton"],
+                correctAnswer: "Acceptor",
+                explanation: "The atom that receives the electron pair to complete its octet is the acceptor."
+            },
+            {
+                question: "A non-bonded pair of electrons on an atom is referred to as a:",
+                options: ["Bond pair", "Shared pair", "Double bond", "Lone pair"],
+                correctAnswer: "Lone pair",
+                explanation: "A lone pair is a pair of valence electrons that are not involved in bonding and belong solely to a single atom."
+            },
+            {
+                question: "In the reaction between ammonia ($NH_3$) and a proton ($H^+$), which species acts as the donor?",
+                options: ["The proton ($H^+$)", "Ammonia ($NH_3$)", "Both equally", "A hydrogen atom from ammonia"],
+                correctAnswer: "Ammonia ($NH_3$)",
+                explanation: "The nitrogen atom in ammonia has a lone pair of electrons that it can donate to the electron-deficient proton ($H^+$)."
+            },
+            {
+                question: "In the compound formed between ammonia ($NH_3$) and boron trifluoride ($BF_3$), which is the acceptor?",
+                options: ["Ammonia ($NH_3$)", "Nitrogen atom", "Boron trifluoride ($BF_3$)", "A fluorine atom"],
+                correctAnswer: "Boron trifluoride ($BF_3$)",
+                explanation: "The central boron atom in boron trifluoride only has six valence electrons and is electron-deficient, so it acts as the electron acceptor."
+            },
+            {
+                question: "A coordinate covalent bond is represented by:",
+                options: ["A double line", "A dotted line", "An arrow pointing from the donor to the acceptor", "A curved line"],
+                correctAnswer: "An arrow pointing from the donor to the acceptor",
+                explanation: "The arrow notation visually represents the direction of the electron donation from the donor to the acceptor."
+            },
+            {
+                question: "Why is the $BF_3$ molecule an electron acceptor?",
+                options: ["It has a lone pair on boron", "It is electron-deficient, with only 6 electrons around the central boron atom", "It is positively charged", "Fluorine is highly electronegative"],
+                correctAnswer: "It is electron-deficient, with only 6 electrons around the central boron atom",
+                explanation: "The boron atom in $BF_3$ does not satisfy the octet rule with only six electrons, making it a strong electron acceptor."
+            },
+            {
+                question: "The properties of coordinate covalent compounds are generally most similar to those of:",
+                options: ["Ionic compounds", "Covalent compounds", "Metallic compounds", "Polar compounds"],
+                correctAnswer: "Covalent compounds",
+                explanation: "Since coordinate bonds are a type of covalent bond, compounds containing them share similar properties with other covalent compounds, such as low melting points and poor conductivity."
+            },
+            {
+                question: "The relatively weak forces of attraction that exist between molecules are called:",
+                options: ["Covalent bonds", "Ionic bonds", "Intermolecular forces", "Metallic bonds"],
+                correctAnswer: "Intermolecular forces",
+                explanation: "Intermolecular forces (IMFs) are weak attractive forces that exist between molecules. They are responsible for a substance's physical properties, like melting and boiling points, but are not true chemical bonds."
+            },
+            {
+                question: "Intermolecular forces, when compared to covalent or ionic bonds, are generally:",
+                options: ["Much stronger", "Of equal strength", "Much weaker", "Only present in solids"],
+                correctAnswer: "Much weaker",
+                explanation: "Chemical bonds like covalent and ionic bonds are much stronger than the intermolecular forces between molecules. A chemical reaction is needed to break a covalent bond, while only a physical change (like boiling) is needed to overcome intermolecular forces."
+            },
+            {
+                question: "All intermolecular forces are collectively known as:",
+                options: ["Covalent forces", "London dispersion forces", "Van der Waals forces", "Bond forces"],
+                correctAnswer: "Van der Waals forces",
+                explanation: "The term Van der Waals forces is often used to refer to all intermolecular forces, including dipole-dipole interactions and London dispersion forces."
+            },
+            {
+                question: "The attraction between the partial positive end of one polar molecule and the partial negative end of another is a:",
+                options: ["Covalent bond", "Hydrogen bond", "Dipole-dipole interaction", "Metallic bond"],
+                correctAnswer: "Dipole-dipole interaction",
+                explanation: "This is the definition of a dipole-dipole interaction, a type of intermolecular force that exists between polar molecules."
+            },
+            {
+                question: "Dipole-dipole forces exist between:",
+                options: ["Non-polar molecules", "Polar molecules", "Individual atoms", "Metal ions"],
+                correctAnswer: "Polar molecules",
+                explanation: "Dipole-dipole forces require the presence of permanent dipoles, which are found in polar molecules due to unequal electron sharing."
+            },
+            {
+                question: "How do polar molecules like HCl arrange themselves in a liquid or solid?",
+                options: ["Randomly", "With positive ends facing positive ends", "The positive end of one molecule aligns with the negative end of another", "In long chains"],
+                correctAnswer: "The positive end of one molecule aligns with the negative end of another",
+                explanation: "The electrostatic attraction between the oppositely charged ends of the molecules causes them to align in an orderly fashion to maximize attraction and minimize repulsion."
+            },
+            {
+                question: "The two main types of intermolecular forces discussed in the source are dipole-dipole interactions and:",
+                options: ["Ionic bonding", "Covalent bonding", "Hydrogen bonding", "Metallic bonding"],
+                correctAnswer: "Hydrogen bonding",
+                explanation: "The flashcards mention hydrogen bonds as a strong type of intermolecular force, separate from the general dipole-dipole interaction."
+            },
+            {
+                question: "Breaking the intermolecular forces in HCl requires significantly _______ energy than breaking the covalent H-Cl bond.",
+                options: ["More", "Less", "The same amount of", "An unknown amount of"],
+                correctAnswer: "Less",
+                explanation: "Covalent bonds are much stronger than intermolecular forces, so significantly less energy is needed to overcome the forces between molecules (boiling) than to break the bonds within a molecule (chemical decomposition)."
+            },
+            {
+                question: "Intermolecular forces are responsible for holding _______ together.",
+                options: ["Atoms within a molecule", "Protons and neutrons in a nucleus", "Molecules in a liquid or solid", "Electrons in an atom"],
+                correctAnswer: "Molecules in a liquid or solid",
+                explanation: "Intermolecular forces are the glue that holds separate molecules together to form a bulk substance like a liquid or a solid."
+            },
+            {
+                question: "The partial positive and negative charges on polar molecules arise from:",
+                options: ["Equal sharing of electrons", "The transfer of electrons", "The presence of isotopes", "Unequal sharing of electrons"],
+                correctAnswer: "Unequal sharing of electrons",
+                explanation: "The unequal sharing of electrons due to a difference in electronegativity creates a dipole moment, leading to partial charges on the atoms."
+            },
+            {
+                question: "Hydrogen bonding is a special, strong type of:",
+                options: ["Covalent bond", "Ionic bond", "Dipole-dipole interaction", "Metallic bond"],
+                correctAnswer: "Dipole-dipole interaction",
+                explanation: "Hydrogen bonding is a particularly strong type of dipole-dipole interaction that occurs when hydrogen is bonded to highly electronegative elements like nitrogen, oxygen, or fluorine."
+            },
+            {
+                question: "A hydrogen bond forms between a partially positive hydrogen atom and a highly _______ atom of another molecule.",
+                options: ["Electropositive", "Electronegative", "Metallic", "Neutral"],
+                correctAnswer: "Electronegative",
+                explanation: "Hydrogen bonds occur when a hydrogen atom bonded to a highly electronegative atom is attracted to another highly electronegative atom on a different molecule."
+            },
+            {
+                question: "Which of the following elements can participate in hydrogen bonding when bonded to hydrogen?",
+                options: ["Carbon", "Oxygen", "Sodium", "Chlorine"],
+                correctAnswer: "Oxygen",
+                explanation: "Hydrogen bonds form specifically with the highly electronegative atoms of Fluorine, Oxygen, and Nitrogen."
+            },
+            {
+                question: "The presence of strong hydrogen bonding in a substance typically leads to a higher:",
+                options: ["Reactivity", "Atomic mass", "Boiling point", "Density in the solid state"],
+                correctAnswer: "Boiling point",
+                explanation: "A high boiling point indicates that a lot of energy is required to overcome the forces holding the molecules together. Strong hydrogen bonds require significant energy to break."
+            },
+            {
+                question: "Why does water have a higher boiling point than alcohol?",
+                options: ["Water molecules are heavier", "Water has stronger and more extensive hydrogen bonding", "Alcohol is more volatile", "Alcohol has covalent bonds"],
+                correctAnswer: "Water has stronger and more extensive hydrogen bonding",
+                explanation: "Water molecules can form up to four hydrogen bonds with neighboring molecules, which is a greater extent of bonding than in most alcohols, leading to a much higher boiling point."
+            },
+            {
+                question: "The phenomenon of ice floating on water is explained by:",
+                options: ["The high density of ice", "The specific arrangement of water molecules due to hydrogen bonding, which makes ice less dense", "The surface tension of water", "The low mass of ice"],
+                correctAnswer: "The specific arrangement of water molecules due to hydrogen bonding, which makes ice less dense",
+                explanation: "When water freezes, hydrogen bonds force the molecules into a fixed, open crystal lattice that contains a lot of empty space. This makes solid ice less dense than liquid water, so it floats."
+            },
+            {
+                question: "The density of ice is _______ the density of liquid water.",
+                options: ["Greater than", "Equal to", "Less than", "Unrelated to"],
+                correctAnswer: "Less than",
+                explanation: "Because ice is less dense than liquid water, it floats. This is a crucial property for aquatic life."
+            },
+            {
+                question: "When water freezes, its volume:",
+                options: ["Decreases", "Stays the same", "Expands", "Becomes zero"],
+                correctAnswer: "Expands",
+                explanation: "The open crystal structure formed by hydrogen bonds in ice means that water expands as it freezes, which is why pipes can burst in cold weather."
+            },
+            {
+                question: "The boiling point of water is:",
+                options: ["78°C", "0°C", "100°C", "-10°C"],
+                correctAnswer: "100°C",
+                explanation: "The boiling point of pure water at standard atmospheric pressure is 100°C."
+            },
+            {
+                question: "In a water molecule ($H_2O$), the oxygen atom carries a partial _______ charge.",
+                options: ["Positive", "Negative", "Neutral", "Double positive"],
+                correctAnswer: "Negative",
+                explanation: "Oxygen is more electronegative than hydrogen, so it pulls the shared electrons closer, giving it a partial negative charge."
+            },
+            {
+                question: "A metallic bond is defined as the force of attraction between metal ions and:",
+                options: ["Non-metal ions", "Shared electron pairs", "Mobile or free-moving electrons", "Other metal nuclei"],
+                correctAnswer: "Mobile or free-moving electrons",
+                explanation: "Metallic bonds are defined by the attraction between a lattice of positive metal ions and a 'sea' of mobile, delocalized electrons that are free to move throughout the structure."
+            },
+            {
+                question: "The \"sea of electrons\" model is used to describe:",
+                options: ["Covalent bonding", "Ionic bonding", "Hydrogen bonding", "Metallic bonding"],
+                correctAnswer: "Metallic bonding",
+                explanation: "This model visualizes the metallic structure as a lattice of positive ions surrounded by a mobile 'sea' of valence electrons."
+            },
+            {
+                question: "Why are metals good conductors of electricity?",
+                options: ["They have a strong nuclear charge", "They have mobile electrons that can move freely through the structure", "Their atoms are tightly packed", "They have high melting points"],
+                correctAnswer: "They have mobile electrons that can move freely through the structure",
+                explanation: "The mobile electrons in a metallic bond can move easily in response to an electric field, allowing metals to conduct electricity."
+            },
+            {
+                question: "The property of metals that allows them to be drawn into wires is called:",
+                options: ["Malleability", "Lustre", "Ductility", "Conductivity"],
+                correctAnswer: "Ductility",
+                explanation: "Ductility is the ability of a material to deform under tensile stress without fracturing. This property allows metals to be pulled into a wire."
+            },
+            {
+                question: "The property of metals that allows them to be hammered into thin sheets is called:",
+                options: ["Ductility", "Malleability", "Brittleness", "Hardness"],
+                correctAnswer: "Malleability",
+                explanation: "Malleability is the ability of a material to be hammered or pressed into a thin sheet without breaking or cracking."
+            },
+            {
+                question: "The characteristic shine of metals is known as:",
+                options: ["Malleability", "Ductility", "Metallic lustre", "Hardness"],
+                correctAnswer: "Metallic lustre",
+                explanation: "The shine of metals is due to the free-moving electrons absorbing and re-emitting light at a wide range of wavelengths."
+            },
+            {
+                question: "Metals generally have _______ ionization energies.",
+                options: ["High", "Low", "Variable", "Zero"],
+                correctAnswer: "Low",
+                explanation: "Metals have low ionization energies because their valence electrons are loosely held and can be easily removed to form positive ions."
+            },
+            {
+                question: "Metals tend to lose electrons easily to form:",
+                options: ["Anions (negative ions)", "Cations (positive ions)", "Covalent bonds", "Noble gases"],
+                correctAnswer: "Cations (positive ions)",
+                explanation: "By losing negatively charged electrons, metal atoms become positively charged ions (cations)."
+            },
+            {
+                question: "Metals typically have _______ melting and boiling points.",
+                options: ["Low", "High", "Unpredictable", "Below room temperature"],
+                correctAnswer: "High",
+                explanation: "The strong metallic bonds require a significant amount of energy to break, resulting in high melting and boiling points for most metals."
+            },
+            {
+                question: "The electrons in a metallic bond are described as 'mobile' because they:",
+                options: ["Are fixed to a single atom", "Are not attached to any particular atom and can move throughout the metal", "Vibrate in a fixed position", "Only move when heated"],
+                correctAnswer: "Are not attached to any particular atom and can move throughout the metal",
+                explanation: "In a metallic bond, the valence electrons are delocalized, meaning they belong to the entire structure rather than a single atom, allowing them to move freely."
+            },
+            {
+                question: "Attaining eight electrons in the outermost shell is called the:",
+                options: ["Duplet rule", "Octet rule", "Bonding rule", "Stability rule"],
+                correctAnswer: "Octet rule",
+                explanation: "The Octet Rule is the principle that atoms tend to form bonds to achieve eight electrons in their valence shell, which is a highly stable electronic configuration."
+            },
+            {
+                question: "Which bond type involves a \"donor\" and an \"acceptor\"?",
+                options: ["Ionic", "Polar Covalent", "Coordinate Covalent", "Non-polar Covalent"],
+                correctAnswer: "Coordinate Covalent",
+                explanation: "In a coordinate covalent bond, one atom acts as the donor by providing both electrons, while the other acts as the acceptor by receiving them."
+            },
+            {
+                question: "Which of these forces is the strongest?",
+                options: ["Dipole-dipole forces", "Hydrogen bonding", "Covalent bond", "Van der Waals forces"],
+                correctAnswer: "Covalent bond",
+                explanation: "Chemical bonds like covalent bonds are significantly stronger than intermolecular forces (like dipole-dipole, hydrogen bonds, and Van der Waals forces)."
+            },
+            {
+                question: "Which compound is likely to dissolve in water?",
+                options: ["Methane (CH₄)", "Sodium Chloride (NaCl)", "Oxygen (O₂)", "Benzene (C₆H₆)"],
+                correctAnswer: "Sodium Chloride (NaCl)",
+                explanation: "Sodium chloride is an ionic compound. Polar water molecules can surround and pull the positive sodium ions and negative chloride ions apart, dissolving the salt."
+            },
+            {
+                question: "Which substance is a good conductor of electricity in its solid state?",
+                options: ["Sodium Chloride (salt)", "Diamond", "Copper (metal)", "Ice"],
+                correctAnswer: "Copper (metal)",
+                explanation: "Copper is a metal with mobile, free-moving electrons that allow it to conduct electricity even in a solid state."
+            },
+            {
+                question: "In the molecule HCl, which atom would have a partial negative charge (δ-)?",
+                options: ["Hydrogen", "Both would be neutral", "Chlorine", "The bond itself"],
+                correctAnswer: "Chlorine",
+                explanation: "Chlorine is more electronegative than hydrogen, so it pulls the shared electrons closer, gaining a partial negative charge."
+            },
+            {
+                question: "What is the primary reason metals are malleable and ductile?",
+                options: ["Their strong ionic bonds", "The layers of atoms can slide over each other without breaking the metallic bond", "Their low density", "Their high melting points"],
+                correctAnswer: "The layers of atoms can slide over each other without breaking the metallic bond",
+                explanation: "The flexible 'sea' of electrons allows the positive metal ions to slide past one another without repelling each other, which explains why metals can be reshaped."
+            },
+            {
+                question: "A compound has a low melting point and does not conduct electricity when dissolved in water. It most likely has:",
+                options: ["Ionic bonding", "Metallic bonding", "Covalent bonding", "Hydrogen bonding"],
+                correctAnswer: "Covalent bonding",
+                explanation: "Low melting points and poor conductivity are classic properties of covalent compounds, which are held together by weak intermolecular forces and lack free ions or electrons to carry a charge."
+            },
+            {
+                question: "The electronegativity of Fluorine is the highest on the Pauling scale, with a value of:",
+                options: ["1.0", "2.5", "3.0", "4.0"],
+                correctAnswer: "4.0",
+                explanation: "Fluorine is the most electronegative element, meaning it has the strongest pull on shared electrons, with a value of 4.0 on the Pauling scale."
+            },
+            {
+                question: "A chemical bond formed when attractive forces overcome repulsive forces between atoms is a result of:",
+                options: ["Lowering the overall energy to achieve stability", "Increasing the kinetic energy of atoms", "The atoms getting larger", "A nuclear reaction"],
+                correctAnswer: "Lowering the overall energy to achieve stability",
+                explanation: "Bond formation is a spontaneous process that releases energy, leading to a more stable, lower-energy state."
+            },
+            {
+                question: "What is the valence shell electron configuration of a Sodium (Na) atom?",
+                options: ["2s¹", "3p¹", "3s¹", "2p⁶"],
+                correctAnswer: "3s¹",
+                explanation: "Sodium has 11 electrons. The electron configuration is $1s^2 2s^2 2p^6 3s^1$. The outermost electron is in the 3s orbital."
+            },
+            {
+                question: "Which of the following contains both ionic and covalent bonds?",
+                options: ["H₂O", "NaCl", "A mixture of NaCl and H₂O", "NH₄Cl (Ammonium Chloride)"],
+                correctAnswer: "NH₄Cl (Ammonium Chloride)",
+                explanation: "Ammonium chloride ($NH_4Cl$) contains covalent bonds within the ammonium ion ($NH_4^+$) and an ionic bond between the ammonium ion and the chloride ion ($Cl^−$). "
+            },
+            {
+                question: "Non-polar covalent compounds do not dissolve in:",
+                options: ["Benzene", "Ether", "Water", "Acetone"],
+                correctAnswer: "Water",
+                explanation: "Non-polar compounds are insoluble in polar solvents like water, as there are no strong attractions between the molecules to overcome the water-water hydrogen bonds."
+            },
+            {
+                question: "Which type of compound is described as forming a three-dimensional crystal lattice of positive and negative ions?",
+                options: ["Covalent", "Polar", "Ionic", "Metallic"],
+                correctAnswer: "Ionic",
+                explanation: "Ionic compounds form a crystal lattice structure because the strong electrostatic attraction between oppositely charged ions holds them in a fixed, repeating pattern."
+            },
+            {
+                question: "The boiling point of alcohol is:",
+                options: ["100°C", "0°C", "78°C", "50°C"],
+                correctAnswer: "78°C",
+                explanation: "The boiling point of ethanol (a common alcohol) is approximately 78°C."
+            },
+            {
+                question: "The sharing of three pairs of electrons between two atoms results in a:",
+                options: ["Single bond", "Double bond", "Ionic bond", "Triple bond"],
+                correctAnswer: "Triple bond",
+                explanation: "A triple bond involves the sharing of six electrons, or three pairs, between two atoms."
+            },
+            {
+                question: "In a solid ionic compound, the electrical conductance is:",
+                options: ["Very high", "Negligible", "Moderate", "Dependant on temperature"],
+                correctAnswer: "Negligible",
+                explanation: "In a solid ionic compound, the ions are fixed in the lattice and cannot move to carry a current, so conductivity is very low."
+            },
+            {
+                question: "The formation of a positive ion from a Sodium atom is represented by:",
+                options: ["Na + e⁻ → Na⁻", "Na → Na⁺ + e⁻", "Na⁺ + Na⁻ → 2Na", "Na + Cl → NaCl"],
+                correctAnswer: "Na → Na⁺ + e⁻",
+                explanation: "This equation shows a neutral Sodium atom losing a single electron ($e^-$) to become a positive ion ($Na^+$)."
+            },
+            {
+                question: "The formation of a negative ion from a Chlorine atom is represented by:",
+                options: ["Cl → Cl⁺ + e⁻", "Cl₂ → 2Cl", "Cl + e⁻ → Cl⁻", "Cl + H → HCl"],
+                correctAnswer: "Cl + e⁻ → Cl⁻",
+                explanation: "This equation shows a neutral Chlorine atom gaining a single electron ($e^-$) to become a negative ion ($Cl^-$)."
+            },
+            {
+                question: "Which of the following is an example of a covalent compound?",
+                options: ["NaCl", "KCl", "CH₄", "MgO"],
+                correctAnswer: "CH₄",
+                explanation: "Methane ($CH_4$) is a covalent compound because it is formed by the sharing of electrons between carbon and hydrogen atoms, which are both non-metals."
+            },
+            {
+                question: "The concept that \"everything in this world tends to become more stable\" is described as a:",
+                options: ["Scientific theory", "Chemical law", "Universal rule", "Hypothetical principle"],
+                correctAnswer: "Universal rule",
+                explanation: "This is a fundamental concept that applies to all of chemistry, as atoms strive to reach a lower energy state by forming chemical bonds."
+            },
+            {
+                question: "What is the formula for Boron trifluoride?",
+                options: ["$B_3F$", "$BF_3$", "$B_2F$", "$B F_2$"],
+                correctAnswer: "$BF_3$",
+                explanation: "The name trifluoride indicates there are three fluorine atoms bonded to one boron atom, hence the formula $BF_3$."
+            },
+            {
+                question: "Why do metals have low ionisation energies?",
+                options: ["Because the nucleus has a weak hold on the valence electrons, making them easy to remove.", "Because they have a full outer electron shell.", "Because they have a high electron affinity.", "Because their atoms are very large."],
+                correctAnswer: "Because the nucleus has a weak hold on the valence electrons, making them easy to remove.",
+                explanation: "The valence electrons in metals are far from the nucleus and shielded by inner electrons, so the attractive force from the nucleus is weak, making it easy to remove them."
+            },
+            {
+                question: "In the $NH_4^+$ ion, which molecule acts as the electron donor?",
+                options: ["The proton ($H^+$)", "The nitrogen atom in $NH_3$", "The ammonia molecule ($NH_3$)", "The hydrogen atoms in $NH_3$"],
+                correctAnswer: "The ammonia molecule ($NH_3$)",
+                explanation: "The nitrogen atom in the ammonia molecule ($NH_3$) has a lone pair of electrons that it donates to the proton ($H^+$) to form the ammonium ion."
+            },
+            {
+                question: "An atom with six valence electrons needs to form how many covalent bonds to achieve an octet?",
+                options: ["One", "Two", "Three", "Four"],
+                correctAnswer: "Two",
+                explanation: "An atom with six valence electrons needs two more to complete its octet (8 - 6 = 2). It can achieve this by forming two single covalent bonds, each sharing one electron from another atom."
+            },
+            {
+                question: "What is the electronegativity difference between the two hydrogen atoms in an $H_2$ molecule?",
+                options: ["Exactly 1.0", "2.1", "Zero", "Not enough information"],
+                correctAnswer: "Zero",
+                explanation: "The two hydrogen atoms are identical and have the same electronegativity, so the difference is zero, and the electrons are shared equally."
+            },
+            {
+                question: "The formula for Ammonium is:",
+                options: ["$NH_3$", "$NH_4^+$", "$N_2$", "$H_3O^+$"],
+                correctAnswer: "$NH_4^+$",
+                explanation: "The ammonium ion is a polyatomic cation with the chemical formula $NH_4^+$."
+            },
+            {
+                question: "What causes the unique properties of ice, such as floating on water?",
+                options: ["The high density of ice", "The crystal lattice structure of ice, which is held together by hydrogen bonds and contains a lot of empty space.", "The lack of movement of molecules in ice.", "The covalent bonds within the water molecules."],
+                correctAnswer: "The crystal lattice structure of ice, which is held together by hydrogen bonds and contains a lot of empty space.",
+                explanation: "The hydrogen bonds in ice create a fixed, open structure with more space between the molecules than in liquid water. This makes ice less dense and allows it to float."
+            },
+            {
+                question: "Compare the strength of intermolecular forces to covalent bonds",
+                options: ["Intermolecular forces are much stronger.", "Covalent bonds are much weaker.", "They are of equal strength.", "Intermolecular forces are much weaker than the strong covalent bonds holding atoms together within a molecule."],
+                correctAnswer: "Intermolecular forces are much weaker than the strong covalent bonds holding atoms together within a molecule.",
+                explanation: "Covalent bonds are powerful intramolecular forces that hold atoms together to form molecules. Intermolecular forces are the much weaker attractions between these molecules."
+            },
+            {
+                question: "The type of bond formed by the mutual sharing of electrons between non-metals",
+                options: ["Ionic bond", "Metallic bond", "Covalent bond", "Coordinate covalent bond"],
+                correctAnswer: "Covalent bond",
+                explanation: "This is the definition of a covalent bond, which forms when non-metal atoms share electrons to achieve stability."
+            },
+            {
+                question: "Define a metallic bond",
+                options: ["The attraction between a metal and a non-metal.", "The sharing of electrons between two non-metals.", "The attraction between positive metal ions and a 'sea' of mobile or free electrons.", "The attraction between a partially positive and partially negative atom."],
+                correctAnswer: "The attraction between positive metal ions and a 'sea' of mobile or free electrons.",
+                explanation: "The delocalized electrons in the 'sea' can move freely throughout the metal lattice, creating an attractive force with the positive metal ions."
+            },
+            {
+                question: "The term for a non-bonded pair of valence electrons",
+                options: ["A bond pair", "A lone pair of electrons.", "An ion pair", "A shared pair"],
+                correctAnswer: "A lone pair of electrons.",
+                explanation: "A lone pair is a pair of electrons in an atom's valence shell that is not involved in bonding."
+            },
+            {
+                question: "Which type of compound is generally insoluble in water but soluble in non-aqueous solvents like benzene?",
+                options: ["Ionic compounds", "Metallic compounds", "Covalent compounds.", "Polar compounds"],
+                correctAnswer: "Covalent compounds.",
+                explanation: "Non-polar covalent compounds are generally insoluble in polar solvents like water but dissolve in other non-polar solvents like benzene."
+            },
+            {
+                question: "The type of force responsible for holding multiple water molecules together",
+                options: ["Covalent bonds", "Ionic bonds", "Hydrogen bonds, a strong type of intermolecular force.", "Metallic bonds"],
+                correctAnswer: "Hydrogen bonds, a strong type of intermolecular force.",
+                explanation: "Water molecules are held together by strong intermolecular forces called hydrogen bonds, which are responsible for many of water's unique properties, like its high boiling point."
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const progressText = document.getElementById('progress-text');
+        const retakeButton = document.getElementById('retake-button');
+        const explanationContainer = document.getElementById('explanation-container');
+
+        const correctCountEl = document.getElementById('correct-count');
+        const incorrectCountEl = document.getElementById('incorrect-count');
+        const unansweredCountEl = document.getElementById('unanswered-count');
+        const generateFlashcardsBtn = document.getElementById('generate-flashcards');
+        const generateMindmapBtn = document.getElementById('generate-mindmap');
+
+        let currentQuestionIndex = 0;
+        let userSelections = new Array(quizData.length).fill(null);
+        let quizComplete = false;
+
+        function renderQuestion() {
+            if (quizComplete) {
+                showResults();
+                return;
+            }
+
+            const question = quizData[currentQuestionIndex];
+            questionText.innerHTML = `${currentQuestionIndex + 1}. ${question.question}`;
+            optionsContainer.innerHTML = '';
+            explanationContainer.innerHTML = '';
+
+            const hasAnswered = userSelections[currentQuestionIndex] !== null;
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-button', 'w-full', 'text-left', 'py-3', 'px-4', 'rounded-xl', 'text-base', 'font-medium');
+                
+                if (hasAnswered) {
+                    button.disabled = true;
+                    if (option === question.correctAnswer) {
+                        button.classList.add('correct');
+                    } else if (option === userSelections[currentQuestionIndex]) {
+                        button.classList.add('incorrect');
+                    }
+                } else {
+                    button.onclick = () => handleAnswerClick(option);
+                }
+
+                optionsContainer.appendChild(button);
+            });
+
+            if (hasAnswered) {
+                displayExplanation();
+            }
+
+            updateNavigationButtons();
+            updateProgress();
+        }
+
+        function handleAnswerClick(selectedOption) {
+            userSelections[currentQuestionIndex] = selectedOption;
+            const question = quizData[currentQuestionIndex];
+            const hasAnswered = userSelections[currentQuestionIndex] !== null;
+
+            if (hasAnswered) {
+                const buttons = optionsContainer.querySelectorAll('.option-button');
+                buttons.forEach(button => {
+                    button.disabled = true;
+                    if (button.textContent === question.correctAnswer) {
+                        button.classList.add('correct');
+                    } else if (button.textContent === selectedOption) {
+                        button.classList.add('incorrect');
+                    }
+                });
+                displayExplanation();
+            }
+        }
+
+        function displayExplanation() {
+            const question = quizData[currentQuestionIndex];
+            explanationContainer.innerHTML = `<div class="explanation"><b>Explanation:</b> ${question.explanation}</div>`;
+        }
+
+        function updateNavigationButtons() {
+            prevButton.disabled = currentQuestionIndex === 0;
+            nextButton.textContent = currentQuestionIndex === quizData.length - 1 ? "Finish" : "Next";
+        }
+
+        function updateProgress() {
+            progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                quizComplete = true;
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                quizComplete = false;
+                renderQuestion();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let unansweredCount = 0;
+
+            for (let i = 0; i < quizData.length; i++) {
+                if (userSelections[i] === null) {
+                    unansweredCount++;
+                } else if (userSelections[i] === quizData[i].correctAnswer) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+            }
+
+            correctCountEl.textContent = correctCount;
+            incorrectCountEl.textContent = incorrectCount;
+            unansweredCountEl.textContent = unansweredCount;
+        }
+
+        function retakeQuiz() {
+            currentQuestionIndex = 0;
+            userSelections.fill(null);
+            quizComplete = false;
+            resultsContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            renderQuestion();
+        }
+        
+        // These buttons will not trigger an action in the browser, but signal to me
+        // that you are ready for the next step.
+        generateFlashcardsBtn.addEventListener('click', () => {
+             console.log("Flashcards requested");
+        });
+
+        generateMindmapBtn.addEventListener('click', () => {
+            console.log("Mind map requested");
+        });
+
+        prevButton.addEventListener('click', previousQuestion);
+        nextButton.addEventListener('click', nextQuestion);
+        retakeButton.addEventListener('click', retakeQuiz);
+
+        // Initial render
+        renderQuestion();
+    </script>
+</body>
+</html>

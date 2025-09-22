@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQs</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="#" id="back-to-chapters" class="back-link">&larr; Back to Chapters</a>
+            <h1 id="mcq-header">Chapter MCQs</h1>
+        </header>
+        <main id="mcq-container">
+            <div id="question-container" class="hide">
+                <div id="question">Question Text</div>
+                <div id="answer-buttons" class="btn-grid">
+                    <button class="btn">Answer 1</button>
+                    <button class="btn">Answer 2</button>
+                    <button class="btn">Answer 3</button>
+                    <button class="btn">Answer 4</button>
+                </div>
+            </div>
+            <div id="result-container" class="hide">
+                <h2>Quiz Complete!</h2>
+                <p>You scored <span id="score">0</span> out of <span id="total-questions">0</span>.</p>
+                <button id="restart-btn" class="btn">Try Again</button>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
